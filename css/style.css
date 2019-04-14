@@ -6,3 +6,20 @@ h1 {
   font-size: 1.5em;
   text-align: center;
 }
+
+#board {
+  display: grid;
+  background-color: black;
+  margin: auto;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+}
+
+.cell {
+  background-color: white;
+  font-size: 30px;
+}
+
+.data {
+  text-align: center;
+}
