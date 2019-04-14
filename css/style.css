@@ -3,11 +3,25 @@ body, input, textarea, button {
 }
 
 h1 {
-  font-size: 1.5em;
+  font-size: 2em;
   text-align: center;
 }
 
-#board {
+h2 {
+  font-size: 2em;
+  text-align: left;
+}
+
+.container {
+  width: 100%;
+}
+
+#display {
+  width: 224px;
+  margin: auto;
+}
+
+#grid {
   display: grid;
   background-color: black;
   margin: auto;
@@ -17,9 +31,8 @@ h1 {
 
 .cell {
   background-color: white;
-  font-size: 30px;
 }
 
-.data {
+.piece {
   text-align: center;
 }
