@@ -1,14 +1,14 @@
 function render() {
   if (window.innerWidth > window.innerHeight) {
-    side = window.innerHeight * 0.8;
+    var side = window.innerHeight * 0.8;
   } else {
-    side = window.innerWidth * 0.8;
+    var side = window.innerWidth * 0.8;
   }
 
   if (side > 600) { side = 600; }
-  let gap = Math.floor(side / 70);
-  let fontSize = side / 5;
-  side = Math.floor(side - ((2 * gap) / 3) * 3);
+  let gap = Math.floor(side / 65);
+  let fontSize = side / 4;
+  side = Math.floor(side - (2 * gap));
 
   grid.style.height = `${side}px`;
   grid.style.width = `${side}px`;
@@ -21,7 +21,7 @@ function render() {
     grid.removeChild(cells[i]);
   }
 
-  // Create new board cells & content + behaviours
+  // Create new grid cells, content & behaviours
   for (i = 0; i < 9; i++) {
     const cell = document.createElement('div');
     cell.id = `${i}`;
@@ -31,54 +31,112 @@ function render() {
       highlight(this.id);
     });
     cell.addEventListener("mouseout", function() {
-      cell.style.backgroundColor = 'white';
+      cell.style.backgroundColor = purpleDark;
     });
     cell.addEventListener("click", function() {
-      selectCell(this.id);
+      placePiece(this.id);
     });
     const piece = document.createElement('p');
     piece.id = `piece${i}`;
     piece.classList.add('piece');
     piece.style.fontSize = `${fontSize}px`;
-    piece.innerHTML = layout[i];
+    piece.innerHTML = board.state[i];
     cell.appendChild(piece);
     grid.appendChild(cell);
   }
 }
 
 function highlight(index) {
-  let piece = document.getElementById(`piece${index}`);
-  if (piece.innerHTML == '') {
+  if (board.state[index] == '') {
     let cell = document.getElementById(`${index}`);
-    cell.style.backgroundColor = 'red';
+    cell.style.backgroundColor = purpleMedium;
   }
 }
 
-function selectCell(index) {
-  console.log(`cell index ${index} clicked`);
+function placePiece(index) {
+  if (board.state[index] == '') {
+    game.playRound(index);
+  }
+}
+
+function pause(seconds) {
+  let now = new Date();
+  let end = new Date().setSeconds(now.getSeconds() + seconds);
+  while (now < end) {
+    now = new Date(); // update the current time
+  }
 }
 
 // Board Module:
 const board = (() => {
-  var state = ['X', '', 'O', '', '', '', '', '', ''];
-  const add = (piece, index) => {
-    if (state[index] == '') { state[index] = piece; }
-  };
+  let state = ['', '', '', '', '', '', '', '', ''];
+  const addPiece = (piece, index) => { state[index] = piece; };
   const reset = () => { state.fill(''); };
-  return { add, state, reset };
+  return { addPiece, state, reset };
 })();
 
-let side = 600;
+// Player Factory:
+const player = (piece) => {
+  let score = 0;
+  const getScore = () => score;
+  const addWin = () => score++;
+  const reset = () => score = 0; // probably not needed (simply create new player)
+  return { piece, getScore, addWin, reset };
+};
+
+// Game Factory:
+const gameFactory = (first) => {
+  let moves = 0;
+  let human = player('X');
+  let computer = player('O');
+  const playRound = (index) => {
+    if (moves < 9) {
+      board.addPiece(human.piece, index);
+      moves++;
+      render();
+    }
+    if (moves < 9) {
+      message.innerHTML = 'I am thinking...';
+      compMove();
+      moves++;
+      setTimeout(render, 1000);
+      setTimeout(yourMove, 1000);
+    }
+  };
+  const compMove = () => {
+    let placed = false;
+    let index = Math.floor((Math.random() * 8));
+    while (placed == false) {
+      if (board.state[index] == '') {
+        if (Math.random() >= 0.5) {
+          board.addPiece(computer.piece, index);
+          placed = true;
+        }
+      }
+      index++;
+      if (index > 8) { index = 0; }
+    }
+  };
+  const start = () => {
+    if (first == 0) {
+      compMove();
+      moves++;
+    }
+    yourMove();
+  };
+  const yourMove = () => {
+    message.innerHTML = 'Your move, humanoid';
+  };
+  return { start, playRound };
+};
+
 let grid = document.getElementById('grid');
+let message = document.getElementById('message');
 
-let layout = board.state;
+let purpleDark = "#340059";
+let purpleMedium = "#4a0f75";
 
-render();
-
-
-board.add('X', 1);
-board.add('O', 4);
-board.add('X', 2);
-board.add('O', 7);
+game = gameFactory(1);
+game.start();
 
 render();

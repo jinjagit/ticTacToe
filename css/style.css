@@ -1,5 +1,12 @@
+:root {
+  --purple-dark: #340059;
+  --pink-light: #edd3ff;
+}
+
 body, input, textarea, button {
-  font-family: 'Ubuntu Mono', monospace;
+  font-family: 'Ubuntu Mono', Courier, monospace;
+  background-color: var(--purple-dark);
+  color: var(--pink-light);
 }
 
 h1 {
@@ -16,21 +23,21 @@ h2 {
   width: 100%;
 }
 
-#display {
+#score {
   width: 224px;
   margin: auto;
 }
 
 #grid {
   display: grid;
-  background-color: black;
+  background-color: var(--pink-light);
   margin: auto;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
 }
 
 .cell {
-  background-color: white;
+  background-color: var(--purple-dark);
 }
 
 .piece {
