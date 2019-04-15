@@ -23,6 +23,10 @@ h2 {
   width: 100%;
 }
 
+.message {
+  height: 30px;
+}
+
 #score {
   width: 224px;
   margin: auto;

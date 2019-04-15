@@ -47,14 +47,14 @@ function render() {
 }
 
 function highlight(index) {
-  if (board.state[index] == '') {
+  if (board.state[index] == '' && thinking == false && game.gameOver == '') {
     let cell = document.getElementById(`${index}`);
     cell.style.backgroundColor = purpleMedium;
   }
 }
 
 function placePiece(index) {
-  if (board.state[index] == '') {
+  if (board.state[index] == '' && thinking == false) {
     clearInterval(blink);
     game.playRound(index);
   }
@@ -99,21 +99,25 @@ const player = (piece) => {
 // Game Factory:
 const gameFactory = (first) => {
   let moves = 0;
+  let wins = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
+              [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+  let gameOver = '';
   let human = player('X');
   let computer = player('O');
   const playRound = (index) => {
-    if (moves < 9) {
+    if (moves < 9 && gameOver == '') {
       board.addPiece(human.piece, index);
       moves++;
       render();
+      if (moves > 2) { checkForWin(); }
     }
-    if (moves < 9) {
-      message.innerHTML = 'I am thinking...';
+    if (moves < 9  && gameOver == '') {
       index = compMove();
-
+      if (moves > 2) { setTimeout(checkForWin, 1000); }
     }
   };
   const compMove = () => {
+    message.innerHTML = 'I am thinking...';
     let placed = false;
     let index = Math.floor((Math.random() * 8));
     let choice = 0;
@@ -129,17 +133,47 @@ const gameFactory = (first) => {
       if (index > 8) { index = 0; }
     }
     moves++;
+    thinking = true;
     setTimeout(render, 1000);
     setTimeout(yourMove, 1000);
     setTimeout(blinkPieceStart, 1000, choice);
     return choice;
   };
+  const checkForWin = () => {
+    for (i = 0; i < 8; i++) {
+      if ((board.state[wins[i][0]] != '') &&
+        (board.state[wins[i][0]] == board.state[wins[i][1]]) &&
+        (board.state[wins[i][1]] == board.state[wins[i][2]])) {
+        if (board.state[wins[i][0]] == human.piece) {
+          gameOver = 'Human WINS!';
+        } else {
+          gameOver = 'Computer WINS!';
+        }
+        message.innerHTML = gameOver;
+      } else if (moves > 8) {
+        message.innerHTML = '';
+        gameOver = "It's a DRAW!";
+        if (first == 0) {
+          setTimeout(showDraw, 1000);
+        } else {
+          showDraw();
+        }
+      }
+    }
+  };
   const start = () => {
-    if (first == 0) { compMove(); }
-    yourMove();
+    if (first == 0) {
+      compMove();
+    } else {
+      yourMove();
+    }
   };
   const yourMove = () => {
-    message.innerHTML = 'Your move, humanoid';
+    if (gameOver == '') {message.innerHTML = 'Your move, humanoid';}
+    thinking = false;
+  };
+  const showDraw = () => {
+    message.innerHTML = gameOver;
   };
   return { start, playRound, moves };
 };
@@ -151,6 +185,7 @@ let purpleDark = "#340059";
 let purpleMedium = "#4a0f75";
 let blinkStart = new Date();
 let blink = true;
+let thinking = false;
 
 render();
 game = gameFactory(0);
