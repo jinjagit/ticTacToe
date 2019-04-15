@@ -55,15 +55,27 @@ function highlight(index) {
 
 function placePiece(index) {
   if (board.state[index] == '') {
+    clearInterval(blink);
     game.playRound(index);
   }
 }
+function blinkPieceStart(index){
+  blinkStart = new Date().getTime();
+  blink = setInterval(blinkPiece, 125, index);
+}
 
-function pause(seconds) {
-  let now = new Date();
-  let end = new Date().setSeconds(now.getSeconds() + seconds);
-  while (now < end) {
-    now = new Date(); // update the current time
+function blinkPiece(index) {
+  let piece = document.getElementById(`piece${index}`);
+
+    if (piece.innerHTML == "") {
+      piece.innerHTML = board.state[index];
+    } else {
+      piece.innerHTML = "";
+    }
+
+  if (blinkStart + 750 < new Date().getTime()) {
+    clearInterval(blink);
+    piece.innerHTML = board.state[index];
   }
 }
 
@@ -97,15 +109,14 @@ const gameFactory = (first) => {
     }
     if (moves < 9) {
       message.innerHTML = 'I am thinking...';
-      compMove();
-      moves++;
-      setTimeout(render, 1000);
-      setTimeout(yourMove, 1000);
+      index = compMove();
+
     }
   };
   const compMove = () => {
     let placed = false;
     let index = Math.floor((Math.random() * 8));
+    let choice = 0;
     while (placed == false) {
       if (board.state[index] == '') {
         if (Math.random() >= 0.5) {
@@ -113,21 +124,24 @@ const gameFactory = (first) => {
           placed = true;
         }
       }
+      choice = index;
       index++;
       if (index > 8) { index = 0; }
     }
+    moves++;
+    setTimeout(render, 1000);
+    setTimeout(yourMove, 1000);
+    setTimeout(blinkPieceStart, 1000, choice);
+    return choice;
   };
   const start = () => {
-    if (first == 0) {
-      compMove();
-      moves++;
-    }
+    if (first == 0) { compMove(); }
     yourMove();
   };
   const yourMove = () => {
     message.innerHTML = 'Your move, humanoid';
   };
-  return { start, playRound };
+  return { start, playRound, moves };
 };
 
 let grid = document.getElementById('grid');
@@ -135,8 +149,9 @@ let message = document.getElementById('message');
 
 let purpleDark = "#340059";
 let purpleMedium = "#4a0f75";
-
-game = gameFactory(1);
-game.start();
+let blinkStart = new Date();
+let blink = true;
 
 render();
+game = gameFactory(0);
+game.start();
