@@ -145,7 +145,7 @@ const gameFactory = (first) => {
         (board.state[wins[i][0]] == board.state[wins[i][1]]) &&
         (board.state[wins[i][1]] == board.state[wins[i][2]])) {
         if (board.state[wins[i][0]] == human.piece) {
-          gameOver = 'Human WINS!';
+          gameOver = 'Humanoid WINS!';
         } else {
           gameOver = 'Computer WINS!';
         }
