@@ -27,11 +27,12 @@ function render() {
     cell.id = `${i}`;
     cell.classList.add('cell');
     cell.style.lineHeight = `${(side - (2 * gap)) / 3}px`;
+    cell.style.backgroundColor = purpleDark;
     cell.addEventListener("mouseover", function() {
       highlight(this.id);
     });
     cell.addEventListener("mouseout", function() {
-      cell.style.backgroundColor = purpleDark;
+      if (gameOver == '') { cell.style.backgroundColor = purpleDark; }
     });
     cell.addEventListener("click", function() {
       placePiece(this.id);
@@ -47,7 +48,7 @@ function render() {
 }
 
 function highlight(index) {
-  if (board.state[index] == '' && thinking == false && game.gameOver == '') {
+  if (board.state[index] == '' && thinking == false && gameOver == '') {
     let cell = document.getElementById(`${index}`);
     cell.style.backgroundColor = purpleMedium;
   }
@@ -79,6 +80,30 @@ function blinkPiece(index) {
   }
 }
 
+function showWinStart(win) {
+  winStart = new Date().getTime();
+  animWin = setInterval(showWin, 200, win);
+}
+
+function showWin(win) {
+  for (i = 0; i < 3; i++) {
+    let cell = document.getElementById(`${win[i]}`);
+    if (cell.style.backgroundColor == purpleDark) {
+      cell.style.backgroundColor = purpleMedium;
+    } else {
+      cell.style.backgroundColor = purpleDark;
+    }
+  }
+
+  if (winStart + 1600 < new Date().getTime()) {
+    clearInterval(animWin);
+    for (i = 0; i < 3; i++) {
+      let cell = document.getElementById(`${win[i]}`);
+      cell.style.backgroundColor = purpleMedium;
+    }
+  }
+}
+
 // Board Module:
 const board = (() => {
   let state = ['', '', '', '', '', '', '', '', ''];
@@ -101,7 +126,6 @@ const gameFactory = (first) => {
   let moves = 0;
   let wins = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
               [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-  let gameOver = '';
   let human = player('X');
   let computer = player('O');
   const playRound = (index) => {
@@ -140,6 +164,7 @@ const gameFactory = (first) => {
     return choice;
   };
   const checkForWin = () => {
+    let win = [];
     for (i = 0; i < 8; i++) {
       if ((board.state[wins[i][0]] != '') &&
         (board.state[wins[i][0]] == board.state[wins[i][1]]) &&
@@ -149,6 +174,8 @@ const gameFactory = (first) => {
         } else {
           gameOver = 'Computer WINS!';
         }
+        win = wins[i];
+        showWinStart(win);
         message.innerHTML = gameOver;
       } else if (moves > 8) {
         message.innerHTML = '';
@@ -178,13 +205,19 @@ const gameFactory = (first) => {
   return { start, playRound, moves };
 };
 
+// ---------------------------------------------------------------------
+
 let grid = document.getElementById('grid');
 let message = document.getElementById('message');
 
-let purpleDark = "#340059";
-let purpleMedium = "#4a0f75";
+let purpleDark = "rgb(52, 0, 89)";
+let purpleMedium = "rgb(102, 29, 155)";
+
+let gameOver = '';
 let blinkStart = new Date();
 let blink = true;
+let winStart = new Date();
+let animWin = true;
 let thinking = false;
 
 render();

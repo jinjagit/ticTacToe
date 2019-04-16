@@ -40,10 +40,6 @@ h2 {
   grid-template-rows: repeat(3, 1fr);
 }
 
-.cell {
-  background-color: var(--purple-dark);
-}
-
 .piece {
   text-align: center;
 }
