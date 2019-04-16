@@ -195,7 +195,7 @@ const gameFactory = (first) => {
         message.innerHTML = gameOver;
         newGame.style.display = 'inline-block';
         scoreUpdate();
-      } else if (moves > 8) {
+      } else if (moves > 8 && gameOver == '') {
         message.innerHTML = '';
         gameOver = "It's a DRAW!";
         if (first == 0) {
@@ -237,6 +237,7 @@ newGame.addEventListener("click", function() {
   newGame.style.display = 'none';
   board.reset();
   gameOver = '';
+  win = [];
   render();
   startSide == 0 ? startSide = 1 : startSide = 0;
   game = gameFactory(startSide);
@@ -259,5 +260,5 @@ let thinking = false;
 let win = [];
 
 render();
-game = gameFactory(0);
+game = gameFactory(startSide);
 game.start();
