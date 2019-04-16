@@ -10,18 +10,26 @@
 </head>
 
 <body onresize="render()">
-  <br><h1>Scores:</h1><br>
+  <br><h1>Scores:</h1><br><br>
   <div class="container">
-    <div id="score">
-      <br><h2>x-Humanoid:&nbsp; 0</h2>
-      <h2>o-Computer:&nbsp; 0</h2>
+    <div id="scoreBox">
+      <div id="names">
+        <h2>x-Humanoid:</h2>
+        <h2>o-Computer:</h2>
+      </div>
+      <div id="scores">
+        <h3 id="scoreX">0</h3>
+        <h3 id="scoreO">0</h3>
+      </div>
     </div>
   </div>
   <br><br>
   <div class="message">
     <h1 id="message">Messages here</h1>
   </div>
-  <br><br><br><br>
+  <div id="buttonBox">
+    <button id="newGame" class="btn"><h1>Play again</h1></button>
+  </div>
 
   <div id="grid"></div>
 

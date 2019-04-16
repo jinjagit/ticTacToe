@@ -45,6 +45,14 @@ function render() {
     cell.appendChild(piece);
     grid.appendChild(cell);
   }
+
+  scoreUpdate();
+  if (gameOver != '') {renderWin();}
+}
+
+function scoreUpdate() {
+  scoreX.innerHTML = `${humanScore}`;
+  scoreO.innerHTML = `${compScore}`;
 }
 
 function highlight(index) {
@@ -80,12 +88,12 @@ function blinkPiece(index) {
   }
 }
 
-function showWinStart(win) {
+function showWinStart() {
   winStart = new Date().getTime();
-  animWin = setInterval(showWin, 200, win);
+  animWin = setInterval(showWin, 200);
 }
 
-function showWin(win) {
+function showWin() {
   for (i = 0; i < 3; i++) {
     let cell = document.getElementById(`${win[i]}`);
     if (cell.style.backgroundColor == purpleDark) {
@@ -101,6 +109,13 @@ function showWin(win) {
       let cell = document.getElementById(`${win[i]}`);
       cell.style.backgroundColor = purpleMedium;
     }
+  }
+}
+
+function renderWin() {
+  for (i = 0; i < 3; i++) {
+    let cell = document.getElementById(`${win[i]}`);
+    cell.style.backgroundColor = purpleMedium;
   }
 }
 
@@ -164,19 +179,22 @@ const gameFactory = (first) => {
     return choice;
   };
   const checkForWin = () => {
-    let win = [];
     for (i = 0; i < 8; i++) {
       if ((board.state[wins[i][0]] != '') &&
         (board.state[wins[i][0]] == board.state[wins[i][1]]) &&
         (board.state[wins[i][1]] == board.state[wins[i][2]])) {
         if (board.state[wins[i][0]] == human.piece) {
           gameOver = 'Humanoid WINS!';
+          humanScore++;
         } else {
           gameOver = 'Computer WINS!';
+          compScore++;
         }
         win = wins[i];
-        showWinStart(win);
+        showWinStart();
         message.innerHTML = gameOver;
+        newGame.style.display = 'inline-block';
+        scoreUpdate();
       } else if (moves > 8) {
         message.innerHTML = '';
         gameOver = "It's a DRAW!";
@@ -201,6 +219,8 @@ const gameFactory = (first) => {
   };
   const showDraw = () => {
     message.innerHTML = gameOver;
+    newGame.style.display = 'inline-block';
+    scoreUpdate();
   };
   return { start, playRound, moves };
 };
@@ -209,6 +229,23 @@ const gameFactory = (first) => {
 
 let grid = document.getElementById('grid');
 let message = document.getElementById('message');
+let newGame = document.getElementById('newGame');
+let scoreX = document.getElementById('scoreX');
+let scoreO = document.getElementById('scoreO');
+
+newGame.addEventListener("click", function() {
+  newGame.style.display = 'none';
+  board.reset();
+  gameOver = '';
+  render();
+  startSide == 0 ? startSide = 1 : startSide = 0;
+  game = gameFactory(startSide);
+  game.start();
+});
+
+let compScore = 0;
+let humanScore = 0;
+let startSide = 0; // 0: computer starts / 1: human starts
 
 let purpleDark = "rgb(52, 0, 89)";
 let purpleMedium = "rgb(102, 29, 155)";
@@ -219,6 +256,7 @@ let blink = true;
 let winStart = new Date();
 let animWin = true;
 let thinking = false;
+let win = [];
 
 render();
 game = gameFactory(0);

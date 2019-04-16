@@ -1,6 +1,8 @@
 :root {
   --purple-dark: #340059;
   --pink-light: #edd3ff;
+  --pink-hover: #d2a7ef;
+  --btn-border: #b589d3;
 }
 
 body, input, textarea, button {
@@ -19,6 +21,11 @@ h2 {
   text-align: left;
 }
 
+h3 {
+  font-size: 2em;
+  text-align: right;
+}
+
 .container {
   width: 100%;
 }
@@ -27,9 +34,19 @@ h2 {
   height: 30px;
 }
 
-#score {
-  width: 224px;
+#scoreBox {
+  width: 240px;
   margin: auto;
+}
+
+#names {
+  display: inline-block;
+  width: 180px;
+}
+
+#scores {
+  display: inline-block;
+  width: 50px;
 }
 
 #grid {
@@ -38,6 +55,26 @@ h2 {
   margin: auto;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
+}
+
+#buttonBox {
+  height: 120px;
+  width: 100%;
+  text-align: center;
+}
+
+#newGame {
+  margin-top: 30px;
+  padding: 10px;
+  border-radius: 12px;
+  background-color: var(--pink-light);
+  border: 2px solid var(--btn-border);
+  color: var(--purple-dark);
+  display: none;
+}
+
+#newGame:hover {
+  background-color: var(--pink-hover);
 }
 
 .piece {
