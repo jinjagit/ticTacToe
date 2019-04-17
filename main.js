@@ -14,7 +14,7 @@ function render() {
   grid.style.width = `${side}px`;
   grid.style.gap = `${gap}px`
 
-  // remove cells from board before (re)creating
+  // remove cells from grid before (re)creating
   let cells = document.getElementsByClassName('cell');
 
   for (let i = cells.length - 1; i >= 0; i--) {
@@ -32,7 +32,7 @@ function render() {
       highlight(this.id);
     });
     cell.addEventListener("mouseout", function() {
-      if (gameOver == '') { cell.style.backgroundColor = purpleDark; }
+      if (game.getGameOver() == '') { cell.style.backgroundColor = purpleDark; }
     });
     cell.addEventListener("click", function() {
       placePiece(this.id);
@@ -46,24 +46,23 @@ function render() {
     grid.appendChild(cell);
   }
 
-  scoreUpdate();
-  if (gameOver != '') {renderWin();}
+  if (game.getGameOver() != '') {renderWin();}
 }
 
 function scoreUpdate() {
-  scoreX.innerHTML = `${humanScore}`;
-  scoreO.innerHTML = `${compScore}`;
+  scoreX.innerHTML = `${human.getScore()}`;
+  scoreO.innerHTML = `${computer.getScore()}`;
 }
 
 function highlight(index) {
-  if (board.state[index] == '' && thinking == false && gameOver == '') {
+  if (board.state[index] == '' && game.getThinking() == false && game.getGameOver() == '') {
     let cell = document.getElementById(`${index}`);
     cell.style.backgroundColor = purpleMedium;
   }
 }
 
 function placePiece(index) {
-  if (board.state[index] == '' && thinking == false) {
+  if (board.state[index] == '' && game.getThinking() == false) {
     clearInterval(blink);
     game.playRound(index);
   }
@@ -95,7 +94,7 @@ function showWinStart() {
 
 function showWin() {
   for (i = 0; i < 3; i++) {
-    let cell = document.getElementById(`${win[i]}`);
+    let cell = document.getElementById(`${game.getWin()[i]}`);
     if (cell.style.backgroundColor == purpleDark) {
       cell.style.backgroundColor = purpleMedium;
     } else {
@@ -106,7 +105,7 @@ function showWin() {
   if (winStart + 1600 < new Date().getTime()) {
     clearInterval(animWin);
     for (i = 0; i < 3; i++) {
-      let cell = document.getElementById(`${win[i]}`);
+      let cell = document.getElementById(`${game.getWin()[i]}`);
       cell.style.backgroundColor = purpleMedium;
     }
   }
@@ -114,7 +113,7 @@ function showWin() {
 
 function renderWin() {
   for (i = 0; i < 3; i++) {
-    let cell = document.getElementById(`${win[i]}`);
+    let cell = document.getElementById(`${game.getWin()[i]}`);
     cell.style.backgroundColor = purpleMedium;
   }
 }
@@ -132,17 +131,20 @@ const player = (piece) => {
   let score = 0;
   const getScore = () => score;
   const addWin = () => score++;
-  const reset = () => score = 0; // probably not needed (simply create new player)
-  return { piece, getScore, addWin, reset };
+  return { piece, getScore, addWin };
 };
 
 // Game Factory:
 const gameFactory = (first) => {
   let moves = 0;
+  let win = [];
+  let gameOver = '';
+  let thinking = false;
   let wins = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
               [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-  let human = player('X');
-  let computer = player('O');
+  const getWin= () => win;
+  const getGameOver= () => gameOver;
+  const getThinking= () => thinking;
   const playRound = (index) => {
     if (moves < 9 && gameOver == '') {
       board.addPiece(human.piece, index);
@@ -185,10 +187,10 @@ const gameFactory = (first) => {
         (board.state[wins[i][1]] == board.state[wins[i][2]])) {
         if (board.state[wins[i][0]] == human.piece) {
           gameOver = 'Humanoid WINS!';
-          humanScore++;
+          human.addWin();
         } else {
           gameOver = 'Computer WINS!';
-          compScore++;
+          computer.addWin();
         }
         win = wins[i];
         showWinStart();
@@ -222,7 +224,7 @@ const gameFactory = (first) => {
     newGame.style.display = 'inline-block';
     scoreUpdate();
   };
-  return { start, playRound, moves };
+  return { start, playRound, getGameOver, getThinking, getWin };
 };
 
 // ---------------------------------------------------------------------
@@ -236,29 +238,22 @@ let scoreO = document.getElementById('scoreO');
 newGame.addEventListener("click", function() {
   newGame.style.display = 'none';
   board.reset();
-  gameOver = '';
-  win = [];
-  render();
   startSide == 0 ? startSide = 1 : startSide = 0;
   game = gameFactory(startSide);
+  render();
   game.start();
 });
 
-let compScore = 0;
-let humanScore = 0;
 let startSide = 0; // 0: computer starts / 1: human starts
-
-let purpleDark = "rgb(52, 0, 89)";
-let purpleMedium = "rgb(102, 29, 155)";
-
-let gameOver = '';
 let blinkStart = new Date();
 let blink = true;
 let winStart = new Date();
 let animWin = true;
-let thinking = false;
-let win = [];
+let purpleDark = "rgb(52, 0, 89)";
+let purpleMedium = "rgb(102, 29, 155)";
 
-render();
+human = player('X');
+computer = player('O');
 game = gameFactory(startSide);
+render();
 game.start();
