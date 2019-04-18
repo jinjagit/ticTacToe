@@ -121,7 +121,7 @@ function renderWin() {
 
 function updateMinimaxStatus() {
   if (toggle.checked == true) {
-    minimaxStatus.innerHTML = '[ON: computer will not lose]';
+    minimaxStatus.innerHTML = '[ON: computer plays best moves]';
   } else {
     minimaxStatus.innerHTML = '[OFF: computer plays random moves]';
   }
@@ -151,6 +151,7 @@ const gameFactory = (computerFirst) => {
   let win = false;
   let gameOver = '';
   let thinking = false;
+  let minimaxMoves = [];
   const getWin = () => win;
   const getGameOver = () => gameOver;
   const getThinking = () => thinking;
@@ -169,13 +170,20 @@ const gameFactory = (computerFirst) => {
   const compMove = () => {
     message.innerHTML = 'I am thinking...';
     let choice = 0;
+
     if (toggle.checked == true) { // minimax ON
-      minimaxCalls = 0;
       choice = (minimax(board.state, computer.piece));
-      choice = choice.index;
+      let best = [minimaxMoves[0].index];
+      for (i = 1; i < minimaxMoves.length; i++) {
+        if (minimaxMoves[i].score > minimaxMoves[0].score) {
+          best = [minimaxMoves[i].index];
+        } else if (minimaxMoves[i].score == minimaxMoves[0].score) {
+          best.push(minimaxMoves[i].index);
+        }
+      }
+      random = Math.floor((Math.random() * best.length));
+      choice = best[random];
       board.addPiece(computer.piece, choice);
-
-
     } else { // minimax OFF
       let placed = false;
       let index = Math.floor((Math.random() * 8));
@@ -298,14 +306,16 @@ const gameFactory = (computerFirst) => {
     } else {
 
     // else loop over the moves and choose the move with the lowest score
-        var bestScore = 10000;
-        for(var i = 0; i < moves.length; i++) {
-          if(moves[i].score < bestScore) {
-            bestScore = moves[i].score;
-            bestMove = i;
-          }
+      var bestScore = 10000;
+      for(var i = 0; i < moves.length; i++) {
+        if(moves[i].score < bestScore) {
+          bestScore = moves[i].score;
+          bestMove = i;
         }
       }
+    }
+
+    minimaxMoves = moves;
 
     // return the chosen move (object) from the array to the higher depth
     return moves[bestMove];
