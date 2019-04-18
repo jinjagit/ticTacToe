@@ -47,6 +47,7 @@ function render() {
   }
 
   if (game.getWin() != false) { renderWin(); }
+  console.log(toggle.checked);
 }
 
 function scoreUpdate() {
@@ -136,7 +137,13 @@ const board = (() => {
     }
     return win;
   };
-  return { addPiece, state, reset, checkForWin };
+  const countBlanks = () => {
+    let count = state.reduce(function(n, val) {
+    return n + (val === '');
+    }, 0);
+    return count;
+  };
+  return { addPiece, state, reset, checkForWin, countBlanks };
 })();
 
 // Player factory function:
@@ -148,7 +155,7 @@ const player = (piece) => {
 };
 
 // Game factory function:
-const gameFactory = (first) => {
+const gameFactory = (computerFirst) => {
   let moves = 0;
   let win = false;
   let gameOver = '';
@@ -216,14 +223,14 @@ const gameFactory = (first) => {
     }
   };
   const start = () => {
-    if (first == 0) {
+    if (computerFirst == true) {
       compMove();
     } else {
       yourMove();
     }
   };
   const yourMove = () => {
-    if (gameOver == '') {message.innerHTML = 'Your move, humanoid';}
+    if (gameOver == '') { message.innerHTML = 'Your move, humanoid'; }
     thinking = false;
   };
   const showDraw = () => {
@@ -241,17 +248,18 @@ let message = document.getElementById('message');
 let newGame = document.getElementById('newGame');
 let scoreX = document.getElementById('scoreX');
 let scoreO = document.getElementById('scoreO');
+let toggle = document.getElementById('toggle');
 
 newGame.addEventListener("click", function() {
   newGame.style.display = 'none';
   board.reset();
-  startSide == 0 ? startSide = 1 : startSide = 0;
-  game = gameFactory(startSide);
+  computerFirst == true ? computerFirst = false : computerFirst = true;
+  game = gameFactory(computerFirst);
   render();
   game.start();
 });
 
-let startSide = 0; // 0: computer starts / 1: human starts
+let computerFirst = true;
 let blinkStart = new Date();
 let blink = true;
 let winStart = new Date();
@@ -261,6 +269,6 @@ let purpleMedium = "rgb(102, 29, 155)";
 
 human = player('X');
 computer = player('O');
-game = gameFactory(startSide);
+game = gameFactory(computerFirst);
 render();
 game.start();
