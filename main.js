@@ -46,7 +46,7 @@ function render() {
     grid.appendChild(cell);
   }
 
-  if (game.getGameOver() != '') {renderWin();}
+  if (game.getWin() != false) { renderWin(); }
 }
 
 function scoreUpdate() {
@@ -118,15 +118,28 @@ function renderWin() {
   }
 }
 
-// Board Module:
+// Board module:
 const board = (() => {
   let state = ['', '', '', '', '', '', '', '', ''];
+  let wins = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
+              [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
   const addPiece = (piece, index) => { state[index] = piece; };
   const reset = () => { state.fill(''); };
-  return { addPiece, state, reset };
+  const checkForWin = () => {
+    let win = false;
+    for (i = 0; i < 8; i++) {
+      if ((board.state[wins[i][0]] != '') &&
+        (board.state[wins[i][0]] == board.state[wins[i][1]]) &&
+        (board.state[wins[i][1]] == board.state[wins[i][2]])) {
+        win = wins[i];
+      }
+    }
+    return win;
+  };
+  return { addPiece, state, reset, checkForWin };
 })();
 
-// Player Factory:
+// Player factory function:
 const player = (piece) => {
   let score = 0;
   const getScore = () => score;
@@ -134,14 +147,12 @@ const player = (piece) => {
   return { piece, getScore, addWin };
 };
 
-// Game Factory:
+// Game factory function:
 const gameFactory = (first) => {
   let moves = 0;
-  let win = [];
+  let win = false;
   let gameOver = '';
   let thinking = false;
-  let wins = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
-              [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
   const getWin= () => win;
   const getGameOver= () => gameOver;
   const getThinking= () => thinking;
@@ -150,11 +161,11 @@ const gameFactory = (first) => {
       board.addPiece(human.piece, index);
       moves++;
       render();
-      if (moves > 2) { checkForWin(); }
+      if (moves > 2) { checkForResult(); }
     }
     if (moves < 9  && gameOver == '') {
       index = compMove();
-      if (moves > 2) { setTimeout(checkForWin, 1000); }
+      if (moves > 2) { setTimeout(checkForResult, 1000); }
     }
   };
   const compMove = () => {
@@ -180,31 +191,27 @@ const gameFactory = (first) => {
     setTimeout(blinkPieceStart, 1000, choice);
     return choice;
   };
-  const checkForWin = () => {
-    for (i = 0; i < 8; i++) {
-      if ((board.state[wins[i][0]] != '') &&
-        (board.state[wins[i][0]] == board.state[wins[i][1]]) &&
-        (board.state[wins[i][1]] == board.state[wins[i][2]])) {
-        if (board.state[wins[i][0]] == human.piece) {
-          gameOver = 'Humanoid WINS!';
-          human.addWin();
-        } else {
-          gameOver = 'Computer WINS!';
-          computer.addWin();
-        }
-        win = wins[i];
-        showWinStart();
-        message.innerHTML = gameOver;
-        newGame.style.display = 'inline-block';
-        scoreUpdate();
-      } else if (moves > 8 && gameOver == '') {
-        message.innerHTML = '';
-        gameOver = "It's a DRAW!";
-        if (first == 0) {
-          setTimeout(showDraw, 1000);
-        } else {
-          showDraw();
-        }
+  const checkForResult = () => {
+    win = board.checkForWin();
+    if (win != false) {
+      if (board.state[win[0]] == human.piece) {
+        gameOver = 'Humanoid WINS!';
+        human.addWin();
+      } else {
+        gameOver = 'Computer WINS!';
+        computer.addWin();
+      }
+      showWinStart();
+      message.innerHTML = gameOver;
+      newGame.style.display = 'inline-block';
+      scoreUpdate();
+    } else if (moves > 8 && gameOver == '') {
+      message.innerHTML = '';
+      gameOver = "It's a DRAW!";
+      if (first == 0) {
+        setTimeout(showDraw, 1000);
+      } else {
+        showDraw();
       }
     }
   };
