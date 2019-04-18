@@ -46,8 +46,8 @@ function render() {
     grid.appendChild(cell);
   }
 
+  updateMinimaxStatus();
   if (game.getWin() != false) { renderWin(); }
-  console.log(toggle.checked);
 }
 
 function scoreUpdate() {
@@ -119,31 +119,20 @@ function renderWin() {
   }
 }
 
+function updateMinimaxStatus() {
+  if (toggle.checked == true) {
+    minimaxStatus.innerHTML = '[ON: computer will not lose]';
+  } else {
+    minimaxStatus.innerHTML = '[OFF: computer plays random moves]';
+  }
+}
+
 // Board module:
 const board = (() => {
   let state = ['', '', '', '', '', '', '', '', ''];
-  let wins = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
-              [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
   const addPiece = (piece, index) => { state[index] = piece; };
   const reset = () => { state.fill(''); };
-  const checkForWin = () => {
-    let win = false;
-    for (i = 0; i < 8; i++) {
-      if ((board.state[wins[i][0]] != '') &&
-        (board.state[wins[i][0]] == board.state[wins[i][1]]) &&
-        (board.state[wins[i][1]] == board.state[wins[i][2]])) {
-        win = wins[i];
-      }
-    }
-    return win;
-  };
-  const countBlanks = () => {
-    let count = state.reduce(function(n, val) {
-    return n + (val === '');
-    }, 0);
-    return count;
-  };
-  return { addPiece, state, reset, checkForWin, countBlanks };
+  return { addPiece, state, reset };
 })();
 
 // Player factory function:
@@ -157,12 +146,14 @@ const player = (piece) => {
 // Game factory function:
 const gameFactory = (computerFirst) => {
   let moves = 0;
+  let wins = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
+              [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
   let win = false;
   let gameOver = '';
   let thinking = false;
-  const getWin= () => win;
-  const getGameOver= () => gameOver;
-  const getThinking= () => thinking;
+  const getWin = () => win;
+  const getGameOver = () => gameOver;
+  const getThinking = () => thinking;
   const playRound = (index) => {
     if (moves < 9 && gameOver == '') {
       board.addPiece(human.piece, index);
@@ -171,26 +162,37 @@ const gameFactory = (computerFirst) => {
       if (moves > 2) { checkForResult(); }
     }
     if (moves < 9  && gameOver == '') {
-      index = compMove();
+      compMove();
       if (moves > 2) { setTimeout(checkForResult, 1000); }
     }
   };
   const compMove = () => {
     message.innerHTML = 'I am thinking...';
-    let placed = false;
-    let index = Math.floor((Math.random() * 8));
     let choice = 0;
-    while (placed == false) {
-      if (board.state[index] == '') {
-        if (Math.random() >= 0.5) {
-          board.addPiece(computer.piece, index);
-          placed = true;
+    if (toggle.checked == true) { // minimax ON
+      minimaxCalls = 0;
+      choice = (minimax(board.state, computer.piece));
+      choice = choice.index;
+      board.addPiece(computer.piece, choice);
+
+
+    } else { // minimax OFF
+      let placed = false;
+      let index = Math.floor((Math.random() * 8));
+
+      while (placed == false) {
+        if (board.state[index] == '') {
+          if (Math.random() >= 0.5) {
+            board.addPiece(computer.piece, index);
+            placed = true;
+          }
         }
+        choice = index;
+        index++;
+        if (index > 8) { index = 0; }
       }
-      choice = index;
-      index++;
-      if (index > 8) { index = 0; }
     }
+
     moves++;
     thinking = true;
     setTimeout(render, 1000);
@@ -199,7 +201,7 @@ const gameFactory = (computerFirst) => {
     return choice;
   };
   const checkForResult = () => {
-    win = board.checkForWin();
+    win = checkForWin(board.state);
     if (win != false) {
       if (board.state[win[0]] == human.piece) {
         gameOver = 'Humanoid WINS!';
@@ -215,12 +217,99 @@ const gameFactory = (computerFirst) => {
     } else if (moves > 8 && gameOver == '') {
       message.innerHTML = '';
       gameOver = "It's a DRAW!";
-      if (first == 0) {
+      if (computerFirst == 0) {
         setTimeout(showDraw, 1000);
       } else {
         showDraw();
       }
     }
+  };
+  const checkForWin = (array) => {
+    result = false;
+    for (i = 0; i < 8; i++) {
+      if ((array[wins[i][0]] != '') &&
+        (array[wins[i][0]] == array[wins[i][1]]) &&
+        (array[wins[i][1]] == array[wins[i][2]])) {
+        result = wins[i];; // NAH! this causes win every round for minimax :(
+      }
+    }
+    return result;
+  };
+  const emptyIndexies = (array) => {
+    let blanks = [];
+    for (i = 0; i < 9; i++) {
+      if (array[i] == '') { blanks.push(i); }
+    }
+    return blanks;
+  };
+  const minimax = (newBoard, player) => {
+
+    //available spots
+    var availSpots = emptyIndexies(newBoard);
+
+    // check for the terminal states of win, lose, or tie
+    // and return a value accordingly
+    if (availSpots.length === 0) {
+      return { score: 0 };
+    } else if (newBoard[checkForWin(newBoard)[0]] == computer.piece) {
+      return { score: 10 };
+    } else if (newBoard[checkForWin(newBoard)[0]] == human.piece) {
+      return { score: -10 };
+    }
+
+    var moves = [];
+
+    // loop through available spots
+    for (var i = 0; i < availSpots.length; i++){
+      //create an object for each and store the index of that spot that was stored as a number in the object's index key
+      var move = {};
+    	move.index = availSpots[i];
+
+      // set the empty spot to the current player
+      newBoard[availSpots[i]] = player;
+
+      //if collect the score resulted from calling minimax on the opponent of the current player
+      if (player == computer.piece){
+        var result = minimax(newBoard, human.piece);
+        move.score = result.score;
+      }
+      else {
+        var result = minimax(newBoard, computer.piece);
+        move.score = result.score;
+      }
+
+      //reset the spot to empty
+      newBoard[availSpots[i]] = '';
+
+      // push the object to the array
+      moves.push(move);
+    }
+
+    // if it is the computer's turn loop over the moves and choose the move with the highest score
+    var bestMove;
+    if(player == computer.piece) {
+      var bestScore = -10000;
+      for(var i = 0; i < moves.length; i++) {
+        if(moves[i].score > bestScore) {
+          bestScore = moves[i].score;
+          bestMove = i;
+        }
+      }
+    } else {
+
+    // else loop over the moves and choose the move with the lowest score
+        var bestScore = 10000;
+        for(var i = 0; i < moves.length; i++) {
+          if(moves[i].score < bestScore) {
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      }
+
+    // return the chosen move (object) from the array to the higher depth
+    return moves[bestMove];
+
   };
   const start = () => {
     if (computerFirst == true) {
@@ -249,6 +338,7 @@ let newGame = document.getElementById('newGame');
 let scoreX = document.getElementById('scoreX');
 let scoreO = document.getElementById('scoreO');
 let toggle = document.getElementById('toggle');
+let minimaxStatus = document.getElementById('minimaxStatus');
 
 newGame.addEventListener("click", function() {
   newGame.style.display = 'none';
@@ -257,6 +347,10 @@ newGame.addEventListener("click", function() {
   game = gameFactory(computerFirst);
   render();
   game.start();
+});
+
+toggle.addEventListener("click", function() {
+  updateMinimaxStatus();
 });
 
 let computerFirst = true;
