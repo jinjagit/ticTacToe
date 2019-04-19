@@ -171,11 +171,21 @@ const gameFactory = (compFirst) => {
     message.innerHTML = 'I am thinking...';
     let choice = 0;
 
-    if (toggle.checked == true && moves > 0) { // minimax ON
+    if (toggle.checked == true) { // minimax ON
       choice = (minimax(board.state, computer.piece));
-      choice = choice.index;
+      let best = [minimaxMoves[0]];
+
+      // random choice from equivalently 'best' moves
+      for (i = 1; i < minimaxMoves.length; i++ ) {
+        if (minimaxMoves[i].score > best[0].score) {
+          best = [minimaxMoves[i]];
+        } else if (minimaxMoves[i].score == best[0].score) {
+          best.push(minimaxMoves[i]);
+        }
+      }
+
+      choice = best[Math.floor((Math.random() * best.length))].index;
       board.addPiece(computer.piece, choice);
-      console.log(minimaxMoves);
     } else { // minimax OFF
       let placed = false;
       let index = Math.floor((Math.random() * 8));
@@ -360,7 +370,7 @@ toggle.addEventListener("click", function() {
   updateMinimaxStatus();
 });
 
-let computerFirst = false;
+let computerFirst = true;
 let blinkStart = new Date();
 let blink = true;
 let winStart = new Date();
