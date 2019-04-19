@@ -151,7 +151,7 @@ const gameFactory = (compFirst) => {
   let win = false;
   let gameOver = '';
   let thinking = false;
-  let minimaxMoves = []; // DEBUG!!!
+  let minimaxMoves = [];
   const getWin = () => win;
   const getGameOver = () => gameOver;
   const getThinking = () => thinking;
@@ -255,9 +255,7 @@ const gameFactory = (compFirst) => {
 
 
   const minimax = (newBoard, player) => {
-
-    //available spots
-    var availSpots = emptyIndexies(newBoard);
+    let availSpots = emptyIndexies(newBoard);
 
     // check for the terminal states of win, lose, or tie
     // and return a value accordingly
@@ -319,15 +317,11 @@ const gameFactory = (compFirst) => {
       }
     }
 
-    minimaxMoves = moves;
+    minimaxMoves = moves; // Use to enable random choice from > 1 'best' moves
 
     // return the chosen move (object) from the array to the higher depth
     return moves[bestMove];
-
   };
-
-
-
   const start = () => {
     if (compFirst == true) {
       compMove();
