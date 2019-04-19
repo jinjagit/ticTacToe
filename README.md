@@ -11,7 +11,7 @@ Simon Tharby's solution to [Project: Tic Tac Toe](https://www.theodinproject.com
 
 ### Screenshot:
 
-![ticTacToe.png](ticTacToe.png)
+![ticTacToe.png](img/ticTacToe.png)
 
 ### Getting started:
 
