@@ -68,6 +68,7 @@ function placePiece(index) {
     game.playRound(index);
   }
 }
+
 function blinkPieceStart(index){
   blinkStart = new Date().getTime();
   blink = setInterval(blinkPiece, 125, index);
@@ -155,6 +156,7 @@ const gameFactory = (compFirst) => {
   const getWin = () => win;
   const getGameOver = () => gameOver;
   const getThinking = () => thinking;
+
   const playRound = (index) => {
     if (moves < 9 && gameOver == '') {
       board.addPiece(human.piece, index);
@@ -167,6 +169,7 @@ const gameFactory = (compFirst) => {
       if (moves > 2) { setTimeout(checkForResult, 1000); }
     }
   };
+
   const compMove = () => {
     message.innerHTML = 'I am thinking...';
     let choice = 0;
@@ -210,6 +213,7 @@ const gameFactory = (compFirst) => {
     setTimeout(blinkPieceStart, 1000, choice);
     return choice;
   };
+
   const checkForResult = () => {
     win = checkForWin(board.state);
     if (win != false) {
@@ -234,6 +238,7 @@ const gameFactory = (compFirst) => {
       }
     }
   };
+
   const checkForWin = (array) => {
     result = false;
     for (i = 0; i < 8; i++) {
@@ -245,6 +250,7 @@ const gameFactory = (compFirst) => {
     }
     return result;
   };
+
   const emptyIndexies = (array) => {
     let blanks = [];
     for (i = 0; i < 9; i++) {
@@ -253,12 +259,11 @@ const gameFactory = (compFirst) => {
     return blanks;
   };
 
-
   const minimax = (newBoard, player) => {
+    // Adapted from: https://medium.freecodecamp.org/...
+    // ...how-to-make-your-tic-tac-toe-game-unbeatable-by-using-the-minimax-algorithm-9d690bad4b37
     let availSpots = emptyIndexies(newBoard);
 
-    // check for the terminal states of win, lose, or tie
-    // and return a value accordingly
     if (newBoard[checkForWin(newBoard)[0]] == human.piece) {
       return { score: -10 };
     } else if (newBoard[checkForWin(newBoard)[0]] == computer.piece) {
@@ -267,49 +272,38 @@ const gameFactory = (compFirst) => {
       return { score: 0 };
     }
 
-    var moves = [];
+    let moves = [];
+    for (let i = 0; i < availSpots.length; i++){
 
-    // loop through available spots
-    for (var i = 0; i < availSpots.length; i++){
-      //create an object for each and store the index of that spot that was stored as a number in the object's index key
-      var move = {};
+      let move = {};
     	move.index = availSpots[i];
-
-      // set the empty spot to the current player
       newBoard[availSpots[i]] = player;
 
-      //if collect the score resulted from calling minimax on the opponent of the current player
       if (player == computer.piece){
-        var result = minimax(newBoard, human.piece);
+        let result = minimax(newBoard, human.piece);
         move.score = result.score;
       }
       else {
-        var result = minimax(newBoard, computer.piece);
+        let result = minimax(newBoard, computer.piece);
         move.score = result.score;
       }
 
-      //reset the spot to empty
       newBoard[availSpots[i]] = '';
-
-      // push the object to the array
       moves.push(move);
     }
 
-    // if it is the computer's turn loop over the moves and choose the move with the highest score
-    var bestMove;
+    let bestMove;
     if(player == computer.piece) {
-      var bestScore = -10000;
-      for(var i = 0; i < moves.length; i++) {
+      let bestScore = -10000;
+      for(let i = 0; i < moves.length; i++) {
         if(moves[i].score > bestScore) {
           bestScore = moves[i].score;
           bestMove = i;
         }
       }
     } else {
-
-    // else loop over the moves and choose the move with the lowest score
-      var bestScore = 10000;
-      for(var i = 0; i < moves.length; i++) {
+      let bestScore = 10000;
+      for(let i = 0; i < moves.length; i++) {
         if(moves[i].score < bestScore) {
           bestScore = moves[i].score;
           bestMove = i;
@@ -317,11 +311,10 @@ const gameFactory = (compFirst) => {
       }
     }
 
-    minimaxMoves = moves; // Use to enable random choice from > 1 'best' moves
-
-    // return the chosen move (object) from the array to the higher depth
+    minimaxMoves = moves; // enables random choice from > 1 'best' moves
     return moves[bestMove];
   };
+
   const start = () => {
     if (compFirst == true) {
       compMove();
@@ -329,15 +322,18 @@ const gameFactory = (compFirst) => {
       yourMove();
     }
   };
+
   const yourMove = () => {
     if (gameOver == '') { message.innerHTML = 'Your move, humanoid'; }
     thinking = false;
   };
+
   const showDraw = () => {
     message.innerHTML = gameOver;
     newGame.style.display = 'inline-block';
     scoreUpdate();
   };
+
   return { start, playRound, getGameOver, getThinking, getWin };
 };
 
