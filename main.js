@@ -145,7 +145,7 @@ const player = (piece) => {
 };
 
 // Game factory function:
-const gameFactory = (compFirst) => {
+const gameFactory = (computerFirst) => {
   let moves = 0;
   let wins = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6],
               [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
@@ -231,7 +231,7 @@ const gameFactory = (compFirst) => {
     } else if (moves > 8 && gameOver == '') {
       message.innerHTML = '';
       gameOver = "It's a DRAW!";
-      if (compFirst == 0) {
+      if (computerFirst == 0) {
         setTimeout(showDraw, 1000);
       } else {
         showDraw();
@@ -316,7 +316,7 @@ const gameFactory = (compFirst) => {
   };
 
   const start = () => {
-    if (compFirst == true) {
+    if (computerFirst == true) {
       compMove();
     } else {
       yourMove();
